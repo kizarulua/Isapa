@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delta Executor - Loading Screen</title>
+    <title>Delta Executor - Loadstring</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -25,7 +26,7 @@
         
         .container {
             width: 100%;
-            max-width: 800px;
+            max-width: 900px;
             background: rgba(18, 22, 35, 0.95);
             border-radius: 12px;
             padding: 30px;
@@ -77,6 +78,39 @@
             border-radius: 8px;
             border-left: 4px solid #ff6666;
             animation: pulse 2s infinite;
+        }
+        
+        .code-container {
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            border: 1px solid #5f6c87;
+            overflow-x: auto;
+        }
+        
+        .code {
+            color: #9cdcfe;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+        
+        .code-comment {
+            color: #6a9955;
+        }
+        
+        .code-keyword {
+            color: #c586c0;
+        }
+        
+        .code-string {
+            color: #ce9178;
+        }
+        
+        .code-function {
+            color: #dcdcaa;
         }
         
         .requirements {
@@ -173,24 +207,24 @@
             gap: 8px;
         }
         
-        #fix-btn {
+        #execute-btn {
             background: linear-gradient(135deg, #7e57c2, #5e35b1);
             color: white;
         }
         
-        #fix-btn:hover {
+        #execute-btn:hover {
             background: linear-gradient(135deg, #5e35b1, #7e57c2);
             box-shadow: 0 0 15px rgba(126, 87, 194, 0.5);
             transform: translateY(-2px);
         }
         
-        #restart-btn {
+        #copy-btn {
             background: rgba(40, 47, 65, 0.9);
             color: #b39ddb;
             border: 1px solid #b39ddb;
         }
         
-        #restart-btn:hover {
+        #copy-btn:hover {
             background: rgba(50, 57, 75, 1);
             box-shadow: 0 0 15px rgba(179, 157, 219, 0.3);
             transform: translateY(-2px);
@@ -330,6 +364,44 @@
             </div>
         </div>
         
+        <h2 class="requirements-title">Loadstring Code:</h2>
+        <div class="code-container">
+            <pre class="code"><span class="code-comment">-- Delta Executor Loadstring</span>
+<span class="code-comment">-- Paste this code into your executor</span>
+
+<span class="code-keyword">local</span> <span class="code-function">loadstring</span> = <span class="code-keyword">loadstring</span> <span class="code-keyword">or</span> <span class="code-function">load</span>
+<span class="code-keyword">local</span> code = <span class="code-string">[[
+    print("Delta Executor Initializing...")
+    
+    -- Disable security protocols
+    local function disableSecurity()
+        if not isAntiCheatDisabled() then
+            disableAntiCheat()
+            print("Anti-Cheat: DISABLED")
+        end
+        
+        if not isVerifyTeleportDisabled() then
+            disableVerifyTeleport()
+            print("Verify Teleport: DISABLED")
+        end
+        
+        if not isAntiScamDisabled() then
+            disableAntiScam()
+            print("Anti-Scam: DISABLED")
+        end
+    end
+    
+    -- Main execution
+    disableSecurity()
+    print("Delta Executor is now WORKING!")
+]]</span>
+
+<span class="code-keyword">local</span> success, err = pcall(<span class="code-function">loadstring</span>(code))
+<span class="code-keyword">if</span> <span class="code-keyword">not</span> success <span class="code-keyword">then</span>
+    print(<span class="code-string">"Execution Error: "</span> .. err)
+<span class="code-keyword">end</span></pre>
+        </div>
+        
         <div class="progress-container">
             <div class="progress-bar" id="progress-bar">
                 <div class="progress-text" id="progress-text">0%</div>
@@ -343,17 +415,17 @@
         </div>
         
         <div class="console-output" id="console">
-            <div class="console-line">> Initializing Delta Executor v2.3.1...</div>
-            <div class="console-line console-error">> ERROR: Security protocols active!</div>
-            <div class="console-line">> Please complete the requirements to continue.</div>
+            <div class="console-line">> Delta Executor Ready</div>
+            <div class="console-line">> Type 'loadstring' in the executor to begin</div>
+            <div class="console-line console-error">> WARNING: Security protocols active!</div>
         </div>
         
         <div class="action-buttons">
-            <button id="fix-btn">
-                <i class="fas fa-tools"></i> AUTO FIX
+            <button id="execute-btn">
+                <i class="fas fa-play"></i> EXECUTE LOADSTRING
             </button>
-            <button id="restart-btn">
-                <i class="fas fa-redo"></i> RESTART DELTA
+            <button id="copy-btn">
+                <i class="fas fa-copy"></i> COPY CODE
             </button>
         </div>
         
@@ -366,16 +438,10 @@
         document.addEventListener('DOMContentLoaded', function() {
             const progressBar = document.getElementById('progress-bar');
             const progressText = document.getElementById('progress-text');
-            const fixBtn = document.getElementById('fix-btn');
-            const restartBtn = document.getElementById('restart-btn');
+            const executeBtn = document.getElementById('execute-btn');
+            const copyBtn = document.getElementById('copy-btn');
             const status = document.querySelector('.status');
             const consoleOutput = document.getElementById('console');
-            
-            // Add Font Awesome (since we can't use external CDN in this environment)
-            const fontAwesome = document.createElement('link');
-            fontAwesome.rel = 'stylesheet';
-            fontAwesome.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
-            document.head.appendChild(fontAwesome);
             
             // Simulate initial progress
             let progress = 0;
@@ -390,28 +456,25 @@
                 progressText.textContent = Math.round(progress) + '%';
             }, 500);
             
-            // Fix button handler
-            fixBtn.addEventListener('click', function() {
-                status.innerHTML = '<i class="fas fa-cog fa-spin"></i> Fixing DELTA system...';
-                addConsoleMessage("> Starting security override...", "command");
+            // Execute button handler
+            executeBtn.addEventListener('click', function() {
+                status.innerHTML = '<i class="fas fa-cog fa-spin"></i> Executing Loadstring...';
+                addConsoleMessage("> Executing loadstring code...", "command");
                 
-                // Simulate fixing process
+                // Simulate execution process
                 setTimeout(() => {
                     progressBar.style.width = '60%';
                     progressText.textContent = '60%';
-                    status.innerHTML = '<i class="fas fa-shield-alt"></i> Anti Cheat disabled!';
                     addConsoleMessage("> Anti-Cheat protocol: DISABLED", "success");
                     
                     setTimeout(() => {
                         progressBar.style.width = '80%';
                         progressText.textContent = '80%';
-                        status.innerHTML = '<i class="fas fa-ban"></i> Verify Teleport disabled!';
                         addConsoleMessage("> Verify Teleport: DISABLED", "success");
                         
                         setTimeout(() => {
                             progressBar.style.width = '100%';
                             progressText.textContent = '100%';
-                            status.innerHTML = '<i class="fas fa-check-circle"></i> Anti Scam disabled!';
                             addConsoleMessage("> Anti-Scam: DISABLED", "success");
                             
                             setTimeout(() => {
@@ -425,35 +488,54 @@
                 }, 1500);
             });
             
-            // Restart button handler
-            restartBtn.addEventListener('click', function() {
-                status.innerHTML = '<i class="fas fa-sync fa-spin"></i> Restarting DELTA...';
-                addConsoleMessage("> Restarting Delta Executor...", "command");
+            // Copy button handler
+            copyBtn.addEventListener('click', function() {
+                const code = `-- Delta Executor Loadstring
+-- Paste this code into your executor
+
+local loadstring = loadstring or load
+local code = [[
+    print("Delta Executor Initializing...")
+    
+    -- Disable security protocols
+    local function disableSecurity()
+        if not isAntiCheatDisabled() then
+            disableAntiCheat()
+            print("Anti-Cheat: DISABLED")
+        end
+        
+        if not isVerifyTeleportDisabled() then
+            disableVerifyTeleport()
+            print("Verify Teleport: DISABLED")
+        end
+        
+        if not isAntiScamDisabled() then
+            disableAntiScam()
+            print("Anti-Scam: DISABLED")
+        end
+    end
+    
+    -- Main execution
+    disableSecurity()
+    print("Delta Executor is now WORKING!")
+]]
+
+local success, err = pcall(loadstring(code))
+if not success then
+    print("Execution Error: " .. err)
+end`;
                 
-                // Reset progress
-                progress = 0;
-                progressBar.style.width = '0%';
-                progressText.textContent = '0%';
-                
-                // Clear console and add initial messages
-                setTimeout(() => {
-                    consoleOutput.innerHTML = '';
-                    addConsoleMessage("> Initializing Delta Executor v2.3.1...");
-                    addConsoleMessage("> ERROR: Security protocols active!", "error");
-                    addConsoleMessage("> Please complete the requirements to continue.");
+                navigator.clipboard.writeText(code).then(() => {
+                    addConsoleMessage("> Code copied to clipboard!", "success");
+                    const originalText = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i> COPIED!';
                     
-                    const newInterval = setInterval(() => {
-                        progress += Math.random() * 8;
-                        if (progress >= 35) {
-                            progress = 35;
-                            clearInterval(newInterval);
-                            status.innerHTML = '<i class="fas fa-exclamation-triangle"></i> DELTA IS NOT WORKING';
-                            status.style.color = "#ff6666";
-                        }
-                        progressBar.style.width = progress + '%';
-                        progressText.textContent = Math.round(progress) + '%';
-                    }, 300);
-                }, 2000);
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                    }, 2000);
+                }).catch(err => {
+                    addConsoleMessage("> Failed to copy code: " + err, "error");
+                });
             });
             
             // Function to add messages to console
